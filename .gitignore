@@ -1,0 +1,8 @@
+.idea/
+.terraform/
+*.pem
+*.ppk
+*.hcl
+*.info
+*.tfstate
+*.backup
