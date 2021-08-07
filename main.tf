@@ -1,34 +1,115 @@
+#configure the provider & required plugings
 terraform {
-  required_version = ">= 0.14"
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~>3.0"
+    }
+  }
 }
-
-resource "aws_vpc" "dev-vpc" {
-  cidr_block = var.vpc_cidr
-  enable_dns_hostnames = true
-
+#create VPC
+resource "aws_vpc" "lab-vpc" {
+  cidr_block = var.cidr_block[0]
   tags = {
-    Name = "${var.environment}-vpc"
+    Name = "lab-vpc"
   }
 }
 
-resource "aws_instance" "app_server" {
-  ami = var.ami_instance
+#create public subnet
+resource "aws_subnet" "lab-subnet1" {
+  vpc_id = aws_vpc.lab-vpc.id
+  cidr_block = var.cidr_block[1]
+  tags = {
+    "Name" = "lab-subnet1"
+  }
+}
+
+#configure the IGW
+resource "aws_internet_gateway" "lab-igw" {
+  vpc_id = aws_vpc.lab-vpc.id
+  tags = {
+    "Name" = "lab-igw"
+  }
+}
+
+
+resource "aws_security_group" "lab-sg" {
+  name = "Lab Security Group"
+  description = "To allow inbound and outbound traffic to mylab"
+  vpc_id = aws_vpc.lab-vpc.id
+
+  dynamic ingress {
+    iterator = port
+    for_each = var.ports
+    content {
+      from_port = port.value
+      to_port = port.value
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    "Name" = "lab-sg"
+  }
+}
+
+
+resource "aws_route_table" "lab-rt" {
+  vpc_id = aws_vpc.lab-vpc.id
+
+  route  {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.lab-igw.id
+  }
+
+  tags = {
+    "Name" = "lab-rt"
+  }
+}
+
+resource "aws_route_table_association" "lab-rt-assoc" {
+  subnet_id = aws_subnet.lab-subnet1.id
+  route_table_id = aws_route_table.lab-rt.id
+}
+
+resource "aws_instance" "concourse-web" {
+  ami           = var.ami
   instance_type = var.instance_type
-  availability_zone = "${var.region}b"
-  key_name = "hari-aws"
-  subnet_id = aws_subnet.subnet-1.id
+  key_name = "hari-aws-key"
+  vpc_security_group_ids = [aws_security_group.lab-sg.id]
+  subnet_id = aws_subnet.lab-subnet1.id
+  associate_public_ip_address = true
+
+  provisioner "file" {
+    source = "./install-concourse.sh"
+    destination = "/tmp/install-concourse.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install-concourse.sh",
+      "/tmp/install-concourse.sh ${self.public_ip}",
+    ]
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    private_key = file("hari-aws-key.pem")
+    host = self.public_ip
+  }
 
   tags = {
-    Name = "concourse"
+    Name = "concourse-web"
   }
 }
 
-resource "aws_subnet" "subnet-1" {
-  vpc_id = aws_vpc.dev-vpc.id
-  cidr_block = var.public_subnet_cidr
-  availability_zone = "${var.region}b"
 
-  tags = {
-    Name = "${var.environment}-Public-Subnet-1"
-  }
-}
