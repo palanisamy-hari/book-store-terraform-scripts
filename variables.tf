@@ -21,6 +21,11 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
+variable "zalenium_instance_type" {
+  type = string
+  default = "t2.micro"
+}
+
 variable "cidr_block" {
   type = list(string)
   default = ["172.20.0.0/16", "172.20.10.0/24"]
@@ -28,7 +33,7 @@ variable "cidr_block" {
 
 variable "ports" {
   type = list(number)
-  default = [22,80,8080,443,8081,9000]
+  default = [22,80,8080,443,8081,9000,4444]
 }
 
 variable "public_subnet_cidr" {

@@ -112,4 +112,36 @@ resource "aws_instance" "concourse-web" {
   }
 }
 
+resource "aws_instance" "zalenium-grid" {
+  ami           = var.ami
+  instance_type = var.zalenium_instance_type
+  key_name = "hari-aws-key"
+  vpc_security_group_ids = [aws_security_group.lab-sg.id]
+  subnet_id = aws_subnet.lab-subnet1.id
+  associate_public_ip_address = true
+
+  provisioner "file" {
+    source = "./install-zalenium-grid.sh"
+    destination = "/tmp/install-zalenium-grid.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install-zalenium-grid.sh",
+      "/tmp/install-zalenium-grid.sh ${self.public_ip}",
+    ]
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    private_key = file("hari-aws-key.pem")
+    host = self.public_ip
+  }
+
+  tags = {
+    Name = "zalenium-grid"
+  }
+}
+
 
