@@ -11,12 +11,29 @@ variable "ami_instance" {
   description = "ami id"
 }
 
-variable "instance_type" {
-  description = "instance type"
+variable "ami" {
+  type = string
+  default = "ami-0b9064170e32bde34"
 }
 
-variable "vpc_cidr" {
-  description = "VPC cidr block"
+variable "instance_type" {
+  type = string
+  default = "t2.micro"
+}
+
+variable "zalenium_instance_type" {
+  type = string
+  default = "t2.micro"
+}
+
+variable "cidr_block" {
+  type = list(string)
+  default = ["172.20.0.0/16", "172.20.10.0/24"]
+}
+
+variable "ports" {
+  type = list(number)
+  default = [22,80,8080,443,8081,9000,4444,5000]
 }
 
 variable "public_subnet_cidr" {
