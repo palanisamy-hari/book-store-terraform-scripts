@@ -21,5 +21,4 @@ sudo apt-get install -y docker-ce
 sudo apt install -y docker-compose
 echo "installed docker"
 
-# 2. install selenium grid
-sudo docker run -d -p 4444:4444 --shm-size="2g" selenium/standalone-chrome:4.0.0-rc-1-prerelease-20210804
+sudo docker run -d -p 5000:5000 hariprakashohio/my-node-js-app:latest

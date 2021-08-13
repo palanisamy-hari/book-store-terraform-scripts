@@ -33,7 +33,7 @@ variable "cidr_block" {
 
 variable "ports" {
   type = list(number)
-  default = [22,80,8080,443,8081,9000,4444]
+  default = [22,80,8080,443,8081,9000,4444,5000]
 }
 
 variable "public_subnet_cidr" {
