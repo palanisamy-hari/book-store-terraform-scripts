@@ -21,9 +21,18 @@ sudo apt-get install -y docker-ce
 sudo apt install -y docker-compose
 echo "installed docker"
 
-git clone https://github.com/palanisamy-hari/docker-selenium.git
-cd docker-selenium || return
-sed -i "s/localhost/${CUSTOM_DNS}/g" docker-compose-v3-chrome.yml
+# 2. install concourse
+## clone concourse repo
+git clone https://github.com/concourse/concourse-docker.git
+cd concourse-docker || return
+echo "cloned concourse"
 
-# 2. install selenium grid
-sudo docker-compose -f docker-compose-v3-chrome.yml up
+## replace the localhost with ip from ec2 instance
+sed -i "s/localhost/${CUSTOM_DNS}/g" docker-compose.yml
+echo "replaced local host with host ip"
+
+## generate the keys required
+sudo ./keys/generate
+
+## execute the docker compose to start the services
+sudo docker run -d --net=host --name sonarqube -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true -p 9000:9000 sonarqube:latest

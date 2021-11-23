@@ -82,7 +82,7 @@ resource "aws_route_table_association" "lab-rt-assoc" {
 
 resource "aws_instance" "concourse-web" {
   ami           = var.ami
-  instance_type = var.instance_type
+  instance_type = var.instance_type_medium
   key_name = "hari-aws-key"
   vpc_security_group_ids = [aws_security_group.lab-sg.id]
   subnet_id = aws_subnet.lab-subnet1.id
@@ -114,7 +114,7 @@ resource "aws_instance" "concourse-web" {
 
 resource "aws_instance" "zalenium-grid" {
   ami           = var.ami
-  instance_type = var.zalenium_instance_type
+  instance_type = var.instance_type_custom
   key_name = "hari-aws-key"
   vpc_security_group_ids = [aws_security_group.lab-sg.id]
   subnet_id = aws_subnet.lab-subnet1.id
@@ -145,3 +145,34 @@ resource "aws_instance" "zalenium-grid" {
 }
 
 
+resource "aws_instance" "sonarqube" {
+  ami           = var.ami
+  instance_type = var.instance_type_custom
+  key_name = "hari-aws-key"
+  vpc_security_group_ids = [aws_security_group.lab-sg.id]
+  subnet_id = aws_subnet.lab-subnet1.id
+  associate_public_ip_address = true
+
+  provisioner "file" {
+    source = "./install-sonarqube.sh"
+    destination = "/tmp/install-sonarqube.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install-sonarqube.sh",
+      "/tmp/install-sonarqube.sh ${self.public_ip}",
+    ]
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    private_key = file("hari-aws-key.pem")
+    host = self.public_ip
+  }
+
+  tags = {
+    Name = "sonarqube"
+  }
+}

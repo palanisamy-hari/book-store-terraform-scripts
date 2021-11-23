@@ -1,5 +1,7 @@
 environment = "dev"
 region = "us-east-2"
 instance_type = "t2.micro"
+instance_type_medium = "t2.medium"
+instance_type_custom = "t2.large"
 ami_instance = "ami-0b9064170e32bde34"
 public_subnet_cidr  = "10.0.1.0/24"

@@ -21,6 +21,16 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
+variable "instance_type_custom" {
+  type = string
+  default = "t2.micro"
+}
+
+variable "instance_type_medium" {
+  type = string
+  default = "t2.medium"
+}
+
 variable "zalenium_instance_type" {
   type = string
   default = "t2.micro"
